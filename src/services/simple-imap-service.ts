@@ -1,12 +1,8 @@
-/**
- * Simple IMAP Service for reading emails via Proton Bridge
- */
-
-import { ImapFlow } from 'imapflow';
-import { simpleParser } from 'mailparser';
-import type { Email, Folder, SearchOptions } from '../types/index.js';
-import { logger } from '../utils/logger.js';
-import { generateId } from '../utils/helpers.js';
+import { ImapFlow } from "imapflow";
+import { simpleParser } from "mailparser";
+import type { Email, Folder, SearchOptions } from "../types/index.js";
+import { logger } from "../utils/logger.js";
+import { generateId } from "../utils/helpers.js";
 
 export class SimpleIMAPService {
   private client: ImapFlow | null = null;
@@ -15,10 +11,10 @@ export class SimpleIMAPService {
   private folderCache: Folder[] = [];
 
   async connect(): Promise<void> {
-    const host = process.env.PROTONMAIL_IMAP_HOST || 'localhost';
-    const port = parseInt(process.env.PROTONMAIL_IMAP_PORT || '1143', 10);
-    const username = process.env.PROTONMAIL_USERNAME || '';
-    const password = process.env.PROTONMAIL_PASSWORD || '';
+    const host = process.env.PROTONMAIL_IMAP_HOST || "localhost";
+    const port = parseInt(process.env.PROTONMAIL_IMAP_PORT || "1143", 10);
+    const username = process.env.PROTONMAIL_USERNAME || "";
+    const password = process.env.PROTONMAIL_PASSWORD || "";
 
     this.client = new ImapFlow({
       host,
@@ -37,10 +33,10 @@ export class SimpleIMAPService {
     try {
       await this.client.connect();
       this.isConnected = true;
-      logger.info('IMAP connection established', 'IMAPService');
+      logger.info("IMAP connection established", "IMAPService");
     } catch (error) {
       this.isConnected = false;
-      logger.error('IMAP connection failed', 'IMAPService', error);
+      logger.error("IMAP connection failed", "IMAPService", error);
       throw error;
     }
   }
@@ -50,7 +46,7 @@ export class SimpleIMAPService {
       await this.client.logout();
       this.isConnected = false;
       this.client = null;
-      logger.info('IMAP connection closed', 'IMAPService');
+      logger.info("IMAP connection closed", "IMAPService");
     }
   }
 
@@ -60,12 +56,12 @@ export class SimpleIMAPService {
 
   async getFolders(): Promise<Folder[]> {
     if (!this.client || !this.isConnected) {
-      throw new Error('IMAP not connected');
+      throw new Error("IMAP not connected");
     }
 
     try {
       const mailboxes = await this.client.list();
-      this.folderCache = mailboxes.map(mb => ({
+      this.folderCache = mailboxes.map((mb) => ({
         name: mb.name,
         path: mb.path,
         delimiter: mb.delimiter,
@@ -74,14 +70,18 @@ export class SimpleIMAPService {
       }));
       return this.folderCache;
     } catch (error) {
-      logger.error('Failed to get folders', 'IMAPService', error);
+      logger.error("Failed to get folders", "IMAPService", error);
       throw error;
     }
   }
 
-  async getEmails(folder: string = 'INBOX', limit: number = 50, offset: number = 0): Promise<Email[]> {
+  async getEmails(
+    folder: string = "INBOX",
+    limit: number = 50,
+    offset: number = 0,
+  ): Promise<Email[]> {
     if (!this.client || !this.isConnected) {
-      throw new Error('IMAP not connected');
+      throw new Error("IMAP not connected");
     }
 
     const emails: Email[] = [];
@@ -115,14 +115,14 @@ export class SimpleIMAPService {
             emails.push(email);
             this.emailCache.set(email.id, email);
           } catch (parseError) {
-            logger.warn('Failed to parse email', 'IMAPService', parseError);
+            logger.warn("Failed to parse email", "IMAPService", parseError);
           }
         }
       } finally {
         lock.release();
       }
     } catch (error) {
-      logger.error('Failed to get emails', 'IMAPService', error);
+      logger.error("Failed to get emails", "IMAPService", error);
       throw error;
     }
 
@@ -138,10 +138,10 @@ export class SimpleIMAPService {
 
   async searchEmails(options: SearchOptions): Promise<Email[]> {
     if (!this.client || !this.isConnected) {
-      throw new Error('IMAP not connected');
+      throw new Error("IMAP not connected");
     }
 
-    const folder = options.folder || 'INBOX';
+    const folder = options.folder || "INBOX";
     const emails: Email[] = [];
 
     try {
@@ -209,14 +209,18 @@ export class SimpleIMAPService {
             emails.push(email);
             this.emailCache.set(email.id, email);
           } catch (parseError) {
-            logger.warn('Failed to parse email in search', 'IMAPService', parseError);
+            logger.warn(
+              "Failed to parse email in search",
+              "IMAPService",
+              parseError,
+            );
           }
         }
       } finally {
         lock.release();
       }
     } catch (error) {
-      logger.error('Failed to search emails', 'IMAPService', error);
+      logger.error("Failed to search emails", "IMAPService", error);
       throw error;
     }
 
@@ -224,7 +228,10 @@ export class SimpleIMAPService {
   }
 
   async markAsRead(emailId: string, isRead: boolean = true): Promise<void> {
-    logger.info(`Mark as read not fully implemented: ${emailId} -> ${isRead}`, 'IMAPService');
+    logger.info(
+      `Mark as read not fully implemented: ${emailId} -> ${isRead}`,
+      "IMAPService",
+    );
     const email = this.emailCache.get(emailId);
     if (email) {
       email.isRead = isRead;
@@ -232,7 +239,10 @@ export class SimpleIMAPService {
   }
 
   async starEmail(emailId: string, isStarred: boolean = true): Promise<void> {
-    logger.info(`Star email not fully implemented: ${emailId} -> ${isStarred}`, 'IMAPService');
+    logger.info(
+      `Star email not fully implemented: ${emailId} -> ${isStarred}`,
+      "IMAPService",
+    );
     const email = this.emailCache.get(emailId);
     if (email) {
       email.isStarred = isStarred;
@@ -240,26 +250,34 @@ export class SimpleIMAPService {
   }
 
   async moveEmail(emailId: string, targetFolder: string): Promise<void> {
-    logger.info(`Move email not fully implemented: ${emailId} -> ${targetFolder}`, 'IMAPService');
+    logger.info(
+      `Move email not fully implemented: ${emailId} -> ${targetFolder}`,
+      "IMAPService",
+    );
   }
 
   async deleteEmail(emailId: string): Promise<void> {
-    logger.info(`Delete email not fully implemented: ${emailId}`, 'IMAPService');
+    logger.info(
+      `Delete email not fully implemented: ${emailId}`,
+      "IMAPService",
+    );
     this.emailCache.delete(emailId);
   }
 
   async syncFolder(folder: string): Promise<void> {
     await this.getEmails(folder, 100, 0);
-    logger.info(`Synced folder: ${folder}`, 'IMAPService');
+    logger.info(`Synced folder: ${folder}`, "IMAPService");
   }
 
   clearCache(): void {
     this.emailCache.clear();
     this.folderCache = [];
-    logger.info('Cache cleared', 'IMAPService');
+    logger.info("Cache cleared", "IMAPService");
   }
 
-  private extractAddresses(addressField: unknown): { name?: string; address: string }[] {
+  private extractAddresses(
+    addressField: unknown,
+  ): { name?: string; address: string }[] {
     if (!addressField) return [];
 
     // Handle AddressObject (has 'value' property with array of addresses)
@@ -267,7 +285,7 @@ export class SimpleIMAPService {
     if (field.value && Array.isArray(field.value)) {
       return field.value.map((addr: any) => ({
         name: addr.name,
-        address: addr.address || '',
+        address: addr.address || "",
       }));
     }
 
@@ -277,7 +295,7 @@ export class SimpleIMAPService {
         if (item.value && Array.isArray(item.value)) {
           return item.value.map((addr: any) => ({
             name: addr.name,
-            address: addr.address || '',
+            address: addr.address || "",
           }));
         }
         return [];
@@ -296,16 +314,16 @@ export class SimpleIMAPService {
       from: this.extractAddresses(parsed.from),
       to: this.extractAddresses(parsed.to),
       cc: this.extractAddresses(parsed.cc),
-      subject: parsed.subject || '(No Subject)',
-      body: parsed.text || '',
+      subject: parsed.subject || "(No Subject)",
+      body: parsed.text || "",
       html: parsed.html || undefined,
       date: parsed.date || new Date(),
-      isRead: flags.has('\\Seen'),
-      isStarred: flags.has('\\Flagged'),
+      isRead: flags.has("\\Seen"),
+      isStarred: flags.has("\\Flagged"),
       folder,
       attachments: parsed.attachments?.map((att: any) => ({
-        filename: att.filename || 'attachment',
-        content: att.content.toString('base64'),
+        filename: att.filename || "attachment",
+        content: att.content.toString("base64"),
         contentType: att.contentType,
       })),
     };

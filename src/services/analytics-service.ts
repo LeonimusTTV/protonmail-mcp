@@ -1,9 +1,5 @@
-/**
- * Analytics Service for email statistics and insights
- */
-
-import type { Email, Contact, EmailStats } from '../types/index.js';
-import { logger } from '../utils/logger.js';
+import type { Email, Contact, EmailStats } from "../types/index.js";
+import { logger } from "../utils/logger.js";
 
 interface DailyVolume {
   date: string;
@@ -27,22 +23,30 @@ export class AnalyticsService {
     this.emailData = emails;
     this.recalculateStats();
     this.updateContacts();
-    logger.debug(`Analytics updated with ${emails.length} emails`, 'AnalyticsService');
+    logger.debug(
+      `Analytics updated with ${emails.length} emails`,
+      "AnalyticsService",
+    );
   }
 
   private recalculateStats(): void {
     this.stats = {
       totalEmails: this.emailData.length,
-      unreadEmails: this.emailData.filter(e => !e.isRead).length,
-      sentEmails: this.emailData.filter(e => e.folder.toLowerCase() === 'sent').length,
-      receivedEmails: this.emailData.filter(e => e.folder.toLowerCase() === 'inbox').length,
-      starredEmails: this.emailData.filter(e => e.isStarred).length,
+      unreadEmails: this.emailData.filter((e) => !e.isRead).length,
+      sentEmails: this.emailData.filter(
+        (e) => e.folder.toLowerCase() === "sent",
+      ).length,
+      receivedEmails: this.emailData.filter(
+        (e) => e.folder.toLowerCase() === "inbox",
+      ).length,
+      starredEmails: this.emailData.filter((e) => e.isStarred).length,
       folderCounts: {},
     };
 
     for (const email of this.emailData) {
-      const folder = email.folder || 'Unknown';
-      this.stats.folderCounts[folder] = (this.stats.folderCounts[folder] || 0) + 1;
+      const folder = email.folder || "Unknown";
+      this.stats.folderCounts[folder] =
+        (this.stats.folderCounts[folder] || 0) + 1;
     }
   }
 
@@ -91,8 +95,9 @@ export class AnalyticsService {
   }
 
   getContacts(limit: number = 100): Contact[] {
-    const sorted = Array.from(this.contacts.values())
-      .sort((a, b) => (b.sentCount + b.receivedCount) - (a.sentCount + a.receivedCount));
+    const sorted = Array.from(this.contacts.values()).sort(
+      (a, b) => b.sentCount + b.receivedCount - (a.sentCount + a.receivedCount),
+    );
     return sorted.slice(0, limit);
   }
 
@@ -107,8 +112,14 @@ export class AnalyticsService {
 
     return {
       overview: this.stats,
-      topSenders: topSenders.map(c => ({ email: c.email, count: c.receivedCount })),
-      topRecipients: topRecipients.map(c => ({ email: c.email, count: c.sentCount })),
+      topSenders: topSenders.map((c) => ({
+        email: c.email,
+        count: c.receivedCount,
+      })),
+      topRecipients: topRecipients.map((c) => ({
+        email: c.email,
+        count: c.sentCount,
+      })),
       emailsByFolder: this.stats.folderCounts,
       totalContacts: this.contacts.size,
     };
@@ -122,17 +133,17 @@ export class AnalyticsService {
     // Initialize all days
     for (let i = 0; i < days; i++) {
       const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = date.toISOString().split("T")[0];
       trends.set(dateStr, { date: dateStr, sent: 0, received: 0 });
     }
 
     // Count emails per day
     for (const email of this.emailData) {
       if (email.date < cutoff) continue;
-      const dateStr = email.date.toISOString().split('T')[0];
+      const dateStr = email.date.toISOString().split("T")[0];
       const existing = trends.get(dateStr);
       if (existing) {
-        if (email.folder.toLowerCase() === 'sent') {
+        if (email.folder.toLowerCase() === "sent") {
           existing.sent++;
         } else {
           existing.received++;
@@ -140,7 +151,9 @@ export class AnalyticsService {
       }
     }
 
-    return Array.from(trends.values()).sort((a, b) => a.date.localeCompare(b.date));
+    return Array.from(trends.values()).sort((a, b) =>
+      a.date.localeCompare(b.date),
+    );
   }
 
   clearCache(): void {
@@ -154,6 +167,6 @@ export class AnalyticsService {
       starredEmails: 0,
       folderCounts: {},
     };
-    logger.info('Analytics cache cleared', 'AnalyticsService');
+    logger.info("Analytics cache cleared", "AnalyticsService");
   }
 }

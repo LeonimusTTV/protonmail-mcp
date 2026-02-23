@@ -1,20 +1,3 @@
-#!/usr/bin/env node
-
-/**
- * Proton Mail MCP Server
- *
- * A secure MCP server for Proton Mail with read-only mode support.
- *
- * Features:
- * - Email reading (IMAP) via Proton Bridge
- * - Email search with advanced filters
- * - Email statistics & analytics
- * - Folder management
- * - Optional: Email sending (disabled in read-only mode)
- *
- * Security: Set READ_ONLY_MODE=true to disable all write operations
- */
-
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -24,25 +7,33 @@ import {
   ErrorCode,
 } from "@modelcontextprotocol/sdk/types.js";
 
-import { ProtonMailConfig } from './types/index.js';
-import { SMTPService } from './services/smtp-service.js';
-import { SimpleIMAPService } from './services/simple-imap-service.js';
-import { AnalyticsService } from './services/analytics-service.js';
-import { logger } from './utils/logger.js';
+import { ProtonMailConfig } from "./types/index.js";
+import { SMTPService } from "./services/smtp-service.js";
+import { SimpleIMAPService } from "./services/simple-imap-service.js";
+import { AnalyticsService } from "./services/analytics-service.js";
+import { logger } from "./utils/logger.js";
 
 // Environment configuration
 const PROTONMAIL_USERNAME = process.env.PROTONMAIL_USERNAME;
 const PROTONMAIL_PASSWORD = process.env.PROTONMAIL_PASSWORD;
 const PROTONMAIL_SMTP_HOST = process.env.PROTONMAIL_SMTP_HOST || "127.0.0.1";
-const PROTONMAIL_SMTP_PORT = parseInt(process.env.PROTONMAIL_SMTP_PORT || "1025", 10);
+const PROTONMAIL_SMTP_PORT = parseInt(
+  process.env.PROTONMAIL_SMTP_PORT || "1025",
+  10,
+);
 const PROTONMAIL_IMAP_HOST = process.env.PROTONMAIL_IMAP_HOST || "127.0.0.1";
-const PROTONMAIL_IMAP_PORT = parseInt(process.env.PROTONMAIL_IMAP_PORT || "1143", 10);
+const PROTONMAIL_IMAP_PORT = parseInt(
+  process.env.PROTONMAIL_IMAP_PORT || "1143",
+  10,
+);
 const DEBUG = process.env.DEBUG === "true";
 const READ_ONLY_MODE = process.env.READ_ONLY_MODE !== "false"; // Default: true (safe)
 
 // Validate required environment variables
 if (!PROTONMAIL_USERNAME || !PROTONMAIL_PASSWORD) {
-  console.error("Missing required environment variables: PROTONMAIL_USERNAME and PROTONMAIL_PASSWORD");
+  console.error(
+    "Missing required environment variables: PROTONMAIL_USERNAME and PROTONMAIL_PASSWORD",
+  );
   process.exit(1);
 }
 
@@ -50,9 +41,15 @@ if (!PROTONMAIL_USERNAME || !PROTONMAIL_PASSWORD) {
 logger.setDebugMode(DEBUG);
 
 if (READ_ONLY_MODE) {
-  logger.info("Running in READ-ONLY mode - send/delete operations disabled", "MCPServer");
+  logger.info(
+    "Running in READ-ONLY mode - send/delete operations disabled",
+    "MCPServer",
+  );
 } else {
-  logger.warn("Running in FULL ACCESS mode - send/delete operations enabled", "MCPServer");
+  logger.warn(
+    "Running in FULL ACCESS mode - send/delete operations enabled",
+    "MCPServer",
+  );
 }
 
 // Create configuration
@@ -75,7 +72,7 @@ const config: ProtonMailConfig = {
   cacheEnabled: true,
   analyticsEnabled: true,
   autoSync: true,
-  syncInterval: 5
+  syncInterval: 5,
 };
 
 // Initialize services
@@ -91,11 +88,23 @@ const READ_ONLY_TOOLS = [
     inputSchema: {
       type: "object",
       properties: {
-        folder: { type: "string", description: "Folder name (default: INBOX)", default: "INBOX" },
-        limit: { type: "number", description: "Number of emails to fetch (default: 20)", default: 20 },
-        offset: { type: "number", description: "Pagination offset", default: 0 }
-      }
-    }
+        folder: {
+          type: "string",
+          description: "Folder name (default: INBOX)",
+          default: "INBOX",
+        },
+        limit: {
+          type: "number",
+          description: "Number of emails to fetch (default: 20)",
+          default: 20,
+        },
+        offset: {
+          type: "number",
+          description: "Pagination offset",
+          default: 0,
+        },
+      },
+    },
   },
   {
     name: "get_email_by_id",
@@ -103,10 +112,10 @@ const READ_ONLY_TOOLS = [
     inputSchema: {
       type: "object",
       properties: {
-        emailId: { type: "string", description: "Email ID to retrieve" }
+        emailId: { type: "string", description: "Email ID to retrieve" },
       },
-      required: ["emailId"]
-    }
+      required: ["emailId"],
+    },
   },
   {
     name: "search_emails",
@@ -114,7 +123,10 @@ const READ_ONLY_TOOLS = [
     inputSchema: {
       type: "object",
       properties: {
-        query: { type: "string", description: "Text to search for in subject/body" },
+        query: {
+          type: "string",
+          description: "Text to search for in subject/body",
+        },
         folder: { type: "string", description: "Folder to search in" },
         from: { type: "string", description: "Filter by sender" },
         to: { type: "string", description: "Filter by recipient" },
@@ -123,19 +135,23 @@ const READ_ONLY_TOOLS = [
         isStarred: { type: "boolean", description: "Filter starred emails" },
         dateFrom: { type: "string", description: "Start date (ISO format)" },
         dateTo: { type: "string", description: "End date (ISO format)" },
-        limit: { type: "number", description: "Max results (default: 50)", default: 50 }
-      }
-    }
+        limit: {
+          type: "number",
+          description: "Max results (default: 50)",
+          default: 50,
+        },
+      },
+    },
   },
   {
     name: "get_folders",
     description: "Get all email folders",
-    inputSchema: { type: "object", properties: {} }
+    inputSchema: { type: "object", properties: {} },
   },
   {
     name: "get_email_stats",
     description: "Get email statistics",
-    inputSchema: { type: "object", properties: {} }
+    inputSchema: { type: "object", properties: {} },
   },
   {
     name: "get_contacts",
@@ -143,14 +159,18 @@ const READ_ONLY_TOOLS = [
     inputSchema: {
       type: "object",
       properties: {
-        limit: { type: "number", description: "Max contacts to return", default: 50 }
-      }
-    }
+        limit: {
+          type: "number",
+          description: "Max contacts to return",
+          default: 50,
+        },
+      },
+    },
   },
   {
     name: "get_connection_status",
     description: "Check IMAP connection status",
-    inputSchema: { type: "object", properties: {} }
+    inputSchema: { type: "object", properties: {} },
   },
   {
     name: "sync_emails",
@@ -158,10 +178,13 @@ const READ_ONLY_TOOLS = [
     inputSchema: {
       type: "object",
       properties: {
-        folder: { type: "string", description: "Folder to sync (default: INBOX)" }
-      }
-    }
-  }
+        folder: {
+          type: "string",
+          description: "Folder to sync (default: INBOX)",
+        },
+      },
+    },
+  },
 ];
 
 const WRITE_TOOLS = [
@@ -171,15 +194,22 @@ const WRITE_TOOLS = [
     inputSchema: {
       type: "object",
       properties: {
-        to: { type: "string", description: "Recipient email address(es), comma-separated" },
+        to: {
+          type: "string",
+          description: "Recipient email address(es), comma-separated",
+        },
         cc: { type: "string", description: "CC recipients, comma-separated" },
         bcc: { type: "string", description: "BCC recipients, comma-separated" },
         subject: { type: "string", description: "Email subject" },
         body: { type: "string", description: "Email body content" },
-        isHtml: { type: "boolean", description: "Whether body is HTML", default: false }
+        isHtml: {
+          type: "boolean",
+          description: "Whether body is HTML",
+          default: false,
+        },
       },
-      required: ["to", "subject", "body"]
-    }
+      required: ["to", "subject", "body"],
+    },
   },
   {
     name: "delete_email",
@@ -187,10 +217,10 @@ const WRITE_TOOLS = [
     inputSchema: {
       type: "object",
       properties: {
-        emailId: { type: "string", description: "Email ID to delete" }
+        emailId: { type: "string", description: "Email ID to delete" },
       },
-      required: ["emailId"]
-    }
+      required: ["emailId"],
+    },
   },
   {
     name: "move_email",
@@ -199,10 +229,10 @@ const WRITE_TOOLS = [
       type: "object",
       properties: {
         emailId: { type: "string", description: "Email ID" },
-        targetFolder: { type: "string", description: "Target folder name" }
+        targetFolder: { type: "string", description: "Target folder name" },
       },
-      required: ["emailId", "targetFolder"]
-    }
+      required: ["emailId", "targetFolder"],
+    },
   },
   {
     name: "mark_email_read",
@@ -211,10 +241,10 @@ const WRITE_TOOLS = [
       type: "object",
       properties: {
         emailId: { type: "string", description: "Email ID" },
-        isRead: { type: "boolean", description: "Read status", default: true }
+        isRead: { type: "boolean", description: "Read status", default: true },
       },
-      required: ["emailId"]
-    }
+      required: ["emailId"],
+    },
   },
   {
     name: "star_email",
@@ -223,11 +253,15 @@ const WRITE_TOOLS = [
       type: "object",
       properties: {
         emailId: { type: "string", description: "Email ID" },
-        isStarred: { type: "boolean", description: "Star status", default: true }
+        isStarred: {
+          type: "boolean",
+          description: "Star status",
+          default: true,
+        },
       },
-      required: ["emailId"]
-    }
-  }
+      required: ["emailId"],
+    },
+  },
 ];
 
 // Create MCP server
@@ -240,7 +274,7 @@ const server = new Server(
     capabilities: {
       tools: {},
     },
-  }
+  },
 );
 
 // List available tools based on mode
@@ -249,7 +283,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     ? READ_ONLY_TOOLS
     : [...READ_ONLY_TOOLS, ...WRITE_TOOLS];
 
-  logger.debug(`Listing ${tools.length} tools (read-only: ${READ_ONLY_MODE})`, "MCPServer");
+  logger.debug(
+    `Listing ${tools.length} tools (read-only: ${READ_ONLY_MODE})`,
+    "MCPServer",
+  );
   return { tools };
 });
 
@@ -260,11 +297,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   logger.debug(`Tool called: ${name}`, "MCPServer");
 
   // Block write operations in read-only mode
-  const writeOps = ["send_email", "delete_email", "move_email", "mark_email_read", "star_email"];
+  const writeOps = [
+    "send_email",
+    "delete_email",
+    "move_email",
+    "mark_email_read",
+    "star_email",
+  ];
   if (READ_ONLY_MODE && writeOps.includes(name)) {
     throw new McpError(
       ErrorCode.InvalidRequest,
-      `Operation "${name}" is disabled in read-only mode. Set READ_ONLY_MODE=false to enable.`
+      `Operation "${name}" is disabled in read-only mode. Set READ_ONLY_MODE=false to enable.`,
     );
   }
 
@@ -281,23 +324,29 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         analyticsService.updateWithEmails(emails);
 
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              folder,
-              count: emails.length,
-              emails: emails.map(e => ({
-                id: e.id,
-                from: e.from,
-                to: e.to,
-                subject: e.subject,
-                date: e.date,
-                isRead: e.isRead,
-                isStarred: e.isStarred,
-                preview: e.body.substring(0, 200)
-              }))
-            }, null, 2)
-          }]
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  folder,
+                  count: emails.length,
+                  emails: emails.map((e) => ({
+                    id: e.id,
+                    from: e.from,
+                    to: e.to,
+                    subject: e.subject,
+                    date: e.date,
+                    isRead: e.isRead,
+                    isStarred: e.isStarred,
+                    preview: e.body.substring(0, 200),
+                  })),
+                },
+                null,
+                2,
+              ),
+            },
+          ],
         };
       }
 
@@ -310,12 +359,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const email = await imapService.getEmailById(emailId);
         if (!email) {
           return {
-            content: [{ type: "text", text: JSON.stringify({ error: "Email not found" }) }]
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({ error: "Email not found" }),
+              },
+            ],
           };
         }
 
         return {
-          content: [{ type: "text", text: JSON.stringify(email, null, 2) }]
+          content: [{ type: "text", text: JSON.stringify(email, null, 2) }],
         };
       }
 
@@ -328,41 +382,51 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           subject: args?.subject as string | undefined,
           isRead: args?.isRead as boolean | undefined,
           isStarred: args?.isStarred as boolean | undefined,
-          dateFrom: args?.dateFrom ? new Date(args.dateFrom as string) : undefined,
+          dateFrom: args?.dateFrom
+            ? new Date(args.dateFrom as string)
+            : undefined,
           dateTo: args?.dateTo ? new Date(args.dateTo as string) : undefined,
-          limit: (args?.limit as number) || 50
+          limit: (args?.limit as number) || 50,
         };
 
         const emails = await imapService.searchEmails(searchOptions);
 
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              count: emails.length,
-              emails: emails.map(e => ({
-                id: e.id,
-                from: e.from,
-                subject: e.subject,
-                date: e.date,
-                preview: e.body.substring(0, 200)
-              }))
-            }, null, 2)
-          }]
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  count: emails.length,
+                  emails: emails.map((e) => ({
+                    id: e.id,
+                    from: e.from,
+                    subject: e.subject,
+                    date: e.date,
+                    preview: e.body.substring(0, 200),
+                  })),
+                },
+                null,
+                2,
+              ),
+            },
+          ],
         };
       }
 
       case "get_folders": {
         const folders = await imapService.getFolders();
         return {
-          content: [{ type: "text", text: JSON.stringify({ folders }, null, 2) }]
+          content: [
+            { type: "text", text: JSON.stringify({ folders }, null, 2) },
+          ],
         };
       }
 
       case "get_email_stats": {
         const stats = analyticsService.getStats();
         return {
-          content: [{ type: "text", text: JSON.stringify(stats, null, 2) }]
+          content: [{ type: "text", text: JSON.stringify(stats, null, 2) }],
         };
       }
 
@@ -370,20 +434,30 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const limit = (args?.limit as number) || 50;
         const contacts = analyticsService.getContacts(limit);
         return {
-          content: [{ type: "text", text: JSON.stringify({ contacts }, null, 2) }]
+          content: [
+            { type: "text", text: JSON.stringify({ contacts }, null, 2) },
+          ],
         };
       }
 
       case "get_connection_status": {
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              imap: imapService.isConnectionActive(),
-              smtp: READ_ONLY_MODE ? "disabled (read-only mode)" : smtpService.isConnectionActive(),
-              readOnlyMode: READ_ONLY_MODE
-            }, null, 2)
-          }]
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  imap: imapService.isConnectionActive(),
+                  smtp: READ_ONLY_MODE
+                    ? "disabled (read-only mode)"
+                    : smtpService.isConnectionActive(),
+                  readOnlyMode: READ_ONLY_MODE,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
         };
       }
 
@@ -391,7 +465,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const folder = (args?.folder as string) || "INBOX";
         await imapService.syncFolder(folder);
         return {
-          content: [{ type: "text", text: JSON.stringify({ synced: folder }) }]
+          content: [{ type: "text", text: JSON.stringify({ synced: folder }) }],
         };
       }
 
@@ -404,16 +478,21 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           bcc: args?.bcc as string | undefined,
           subject: args?.subject as string,
           body: args?.body as string,
-          isHtml: args?.isHtml as boolean | undefined
+          isHtml: args?.isHtml as boolean | undefined,
         });
 
         logger.info(`Email sent: ${result.messageId}`, "MCPServer");
 
         return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({ success: true, messageId: result.messageId })
-          }]
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                success: true,
+                messageId: result.messageId,
+              }),
+            },
+          ],
         };
       }
 
@@ -421,7 +500,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const emailId = args?.emailId as string;
         await imapService.deleteEmail(emailId);
         return {
-          content: [{ type: "text", text: JSON.stringify({ deleted: emailId }) }]
+          content: [
+            { type: "text", text: JSON.stringify({ deleted: emailId }) },
+          ],
         };
       }
 
@@ -430,7 +511,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const targetFolder = args?.targetFolder as string;
         await imapService.moveEmail(emailId, targetFolder);
         return {
-          content: [{ type: "text", text: JSON.stringify({ moved: emailId, to: targetFolder }) }]
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({ moved: emailId, to: targetFolder }),
+            },
+          ],
         };
       }
 
@@ -439,7 +525,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const isRead = args?.isRead !== false;
         await imapService.markAsRead(emailId, isRead);
         return {
-          content: [{ type: "text", text: JSON.stringify({ emailId, isRead }) }]
+          content: [
+            { type: "text", text: JSON.stringify({ emailId, isRead }) },
+          ],
         };
       }
 
@@ -448,7 +536,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const isStarred = args?.isStarred !== false;
         await imapService.starEmail(emailId, isStarred);
         return {
-          content: [{ type: "text", text: JSON.stringify({ emailId, isStarred }) }]
+          content: [
+            { type: "text", text: JSON.stringify({ emailId, isStarred }) },
+          ],
         };
       }
 
@@ -461,7 +551,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     logger.error(`Tool error: ${name}`, "MCPServer", error);
     throw new McpError(
       ErrorCode.InternalError,
-      `Error executing ${name}: ${error instanceof Error ? error.message : String(error)}`
+      `Error executing ${name}: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 });
@@ -477,7 +567,11 @@ async function main() {
       await imapService.connect();
       logger.info("IMAP connected", "MCPServer");
     } catch (imapError) {
-      logger.warn("IMAP connection failed - make sure Proton Bridge is running", "MCPServer", imapError);
+      logger.warn(
+        "IMAP connection failed - make sure Proton Bridge is running",
+        "MCPServer",
+        imapError,
+      );
     }
 
     // Verify SMTP only if not in read-only mode
@@ -495,8 +589,10 @@ async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
 
-    logger.info(`MCP Server started (read-only: ${READ_ONLY_MODE})`, "MCPServer");
-
+    logger.info(
+      `MCP Server started (read-only: ${READ_ONLY_MODE})`,
+      "MCPServer",
+    );
   } catch (error) {
     logger.error("Server startup failed", "MCPServer", error);
     process.exit(1);

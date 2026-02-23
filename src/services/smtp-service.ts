@@ -1,12 +1,12 @@
-/**
- * SMTP Service for sending emails via Proton Mail
- */
-
-import nodemailer from 'nodemailer';
-import type { Transporter } from 'nodemailer';
-import type { ProtonMailConfig, SendEmailOptions, Attachment } from '../types/index.js';
-import { logger } from '../utils/logger.js';
-import { parseEmails, isValidEmail } from '../utils/helpers.js';
+import nodemailer from "nodemailer";
+import type { Transporter } from "nodemailer";
+import type {
+  ProtonMailConfig,
+  SendEmailOptions,
+  Attachment,
+} from "../types/index.js";
+import { logger } from "../utils/logger.js";
+import { parseEmails, isValidEmail } from "../utils/helpers.js";
 
 export class SMTPService {
   private transporter: Transporter;
@@ -33,16 +33,18 @@ export class SMTPService {
     try {
       await this.transporter.verify();
       this.isConnected = true;
-      logger.info('SMTP connection verified successfully', 'SMTPService');
+      logger.info("SMTP connection verified successfully", "SMTPService");
       return true;
     } catch (error) {
       this.isConnected = false;
-      logger.error('SMTP connection verification failed', 'SMTPService', error);
+      logger.error("SMTP connection verification failed", "SMTPService", error);
       throw error;
     }
   }
 
-  async sendEmail(options: SendEmailOptions): Promise<{ messageId: string; accepted: string[] }> {
+  async sendEmail(
+    options: SendEmailOptions,
+  ): Promise<{ messageId: string; accepted: string[] }> {
     const toAddresses = parseEmails(options.to);
     const ccAddresses = parseEmails(options.cc);
     const bccAddresses = parseEmails(options.bcc);
@@ -56,21 +58,21 @@ export class SMTPService {
     }
 
     if (toAddresses.length === 0) {
-      throw new Error('At least one recipient is required');
+      throw new Error("At least one recipient is required");
     }
 
     const mailOptions: nodemailer.SendMailOptions = {
       from: this.config.smtp.username,
-      to: toAddresses.join(', '),
+      to: toAddresses.join(", "),
       subject: options.subject,
     };
 
     if (ccAddresses.length > 0) {
-      mailOptions.cc = ccAddresses.join(', ');
+      mailOptions.cc = ccAddresses.join(", ");
     }
 
     if (bccAddresses.length > 0) {
-      mailOptions.bcc = bccAddresses.join(', ');
+      mailOptions.bcc = bccAddresses.join(", ");
     }
 
     if (options.isHtml) {
@@ -92,29 +94,40 @@ export class SMTPService {
         filename: att.filename,
         content: att.content,
         contentType: att.contentType,
-        encoding: att.encoding || 'base64',
+        encoding: att.encoding || "base64",
       }));
     }
 
     try {
-      logger.debug(`Sending email to: ${toAddresses.join(', ')}`, 'SMTPService');
+      logger.debug(
+        `Sending email to: ${toAddresses.join(", ")}`,
+        "SMTPService",
+      );
       const result = await this.transporter.sendMail(mailOptions);
-      logger.info(`Email sent successfully: ${result.messageId}`, 'SMTPService');
+      logger.info(
+        `Email sent successfully: ${result.messageId}`,
+        "SMTPService",
+      );
       return {
         messageId: result.messageId,
         accepted: result.accepted as string[],
       };
     } catch (error) {
-      logger.error('Failed to send email', 'SMTPService', error);
+      logger.error("Failed to send email", "SMTPService", error);
       throw error;
     }
   }
 
-  async sendTestEmail(to: string, customMessage?: string): Promise<{ messageId: string }> {
+  async sendTestEmail(
+    to: string,
+    customMessage?: string,
+  ): Promise<{ messageId: string }> {
     const result = await this.sendEmail({
       to,
-      subject: '🧪 Proton Mail MCP Test Email',
-      body: customMessage || `
+      subject: "🧪 Proton Mail MCP Test Email",
+      body:
+        customMessage ||
+        `
 Hello!
 
 This is a test email from the Sirency Proton Mail MCP Server.
@@ -139,6 +152,6 @@ Proton Mail MCP Server
   async close(): Promise<void> {
     this.transporter.close();
     this.isConnected = false;
-    logger.info('SMTP connection closed', 'SMTPService');
+    logger.info("SMTP connection closed", "SMTPService");
   }
 }

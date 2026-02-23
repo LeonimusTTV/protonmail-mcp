@@ -1,7 +1,3 @@
-/**
- * Type definitions for Proton Mail MCP Server
- */
-
 export interface SMTPConfig {
   host: string;
   port: number;
@@ -91,7 +87,7 @@ export interface SendEmailOptions {
   subject: string;
   body: string;
   isHtml?: boolean;
-  priority?: 'high' | 'normal' | 'low';
+  priority?: "high" | "normal" | "low";
   replyTo?: string;
   attachments?: Attachment[];
 }
