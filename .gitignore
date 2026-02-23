@@ -35,3 +35,4 @@ tmp/
 *.tmp
 
 package-lock.json
+bun.lock
