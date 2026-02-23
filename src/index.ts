@@ -1,3 +1,7 @@
+import { loadEnv } from "./utils/load-env.js";
+
+loadEnv();
+
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {

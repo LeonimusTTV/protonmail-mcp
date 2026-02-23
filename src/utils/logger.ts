@@ -43,19 +43,13 @@ class LoggerClass {
     const prefix = context ? `[${context}]` : "";
     const timestamp = entry.timestamp.toISOString();
 
-    switch (level) {
-      case "debug":
-        console.debug(`${timestamp} DEBUG ${prefix} ${message}`);
-        break;
-      case "info":
-        console.info(`${timestamp} INFO ${prefix} ${message}`);
-        break;
-      case "warn":
-        console.warn(`${timestamp} WARN ${prefix} ${message}`);
-        break;
-      case "error":
-        console.error(`${timestamp} ERROR ${prefix} ${message}`, data || "");
-        break;
+    // All logging must go to stderr for MCP servers (stdout is for JSON-RPC only)
+    const logMessage = `${timestamp} ${level.toUpperCase()} ${prefix} ${message}`;
+
+    if (level === "error" && data) {
+      console.error(logMessage, data);
+    } else {
+      console.error(logMessage);
     }
   }
 

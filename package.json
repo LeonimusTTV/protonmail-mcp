@@ -11,6 +11,7 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "bun dist/index.js",
+    "buildStart": "bun run build && bun run start",
     "lint": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
