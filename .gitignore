@@ -33,3 +33,5 @@ parallel-test.js
 temp/
 tmp/
 *.tmp
+
+package-lock.json

@@ -1,18 +1,16 @@
 {
-  "name": "@sirency/protonmail-pro-mcp",
+  "name": "protonmail-mcp",
   "version": "1.0.0",
-  "description": "🌟 The Ultimate ProtonMail MCP by The Sirency Collective - Professional email management with 20+ tools, advanced analytics, and seamless Proton Bridge integration.",
+  "description": "Proton MCP.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "protonmail-pro-mcp": "dist/index.js"
+    "protonmail-mcp": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "start": "node dist/index.js",
-    "test": "node test.js",
-    "prepare": "npm run build",
+    "start": "bun dist/index.js",
     "lint": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
@@ -32,11 +30,7 @@
     "analytics",
     "professional"
   ],
-  "author": {
-    "name": "The Sirency Collective",
-    "email": "contact@sirency.com",
-    "url": "https://sirency.com"
-  },
+  "author": "LeonimusT",
   "license": "MIT",
   "homepage": "https://github.com/anyrxo/protonmail-pro-mcp#readme",
   "repository": {
