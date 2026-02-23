@@ -32,14 +32,6 @@
   ],
   "author": "LeonimusT",
   "license": "MIT",
-  "homepage": "https://github.com/anyrxo/protonmail-pro-mcp#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/anyrxo/protonmail-pro-mcp.git"
-  },
-  "bugs": {
-    "url": "https://github.com/anyrxo/protonmail-pro-mcp/issues"
-  },
   "engines": {
     "node": ">=18.0.0"
   },
@@ -47,20 +39,14 @@
     "@modelcontextprotocol/sdk": "^1.0.4",
     "imapflow": "^1.0.164",
     "mailparser": "^3.7.1",
-    "nodemailer": "^6.9.15"
+    "nodemailer": "^8.0.1"
   },
   "devDependencies": {
     "@types/mailparser": "^3.4.6",
-    "@types/node": "^22.10.2",
-    "@types/nodemailer": "^6.4.19",
+    "@types/node": "^25.3.0",
+    "@types/nodemailer": "^7.0.11",
     "typescript": "^5.7.2"
   },
-  "files": [
-    "dist/**/*",
-    "README.md",
-    "FINAL-VALIDATION.md",
-    "package.json"
-  ],
   "publishConfig": {
     "access": "public"
   }
